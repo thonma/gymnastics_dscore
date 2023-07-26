@@ -75,10 +75,14 @@
 		groupAddScore += selectedGroups.includes('2') ? 0.5 : 0;
 		groupAddScore += selectedGroups.includes('3') ? 0.5 : 0;
 		const finalSkill = skills.filter(s => s.group === '4')[0];
-		if ('D' <= finalSkill.difficulty) {
-			groupAddScore += 0.5;
-		} else if ('C' <= finalSkill.difficulty) {
+		if (finalSkill.difficulty === 'A') {
+			groupAddScore += 0.1;
+		} else if (finalSkill.difficulty === 'B') {
+			groupAddScore += 0.2;
+		} else if (finalSkill.difficulty === 'C') {
 			groupAddScore += 0.3;
+		} else {
+			groupAddScore += 0.5;
 		}
 
 		// TODO 組合せ加点の算出 (ゆか/鉄棒のみ)
@@ -133,7 +137,7 @@
 					  <select bind:value={skills[sIdx].group} on:change={computeDScore}>
 							<option value=""></option>
 							{#each groups as g}
-							<option value={g}>グループ{g}</option>
+							<option value={g}>{g}</option>
 							{/each}
 						</select>
 					</td>
