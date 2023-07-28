@@ -74,20 +74,85 @@
 		groupAddScore += selectedGroups.includes('1') ? 0.5 : 0;
 		groupAddScore += selectedGroups.includes('2') ? 0.5 : 0;
 		groupAddScore += selectedGroups.includes('3') ? 0.5 : 0;
-		const finalSkill = skills.filter(s => s.group === '4')[0];
-		if (finalSkill.difficulty === 'A') {
-			groupAddScore += 0.1;
-		} else if (finalSkill.difficulty === 'B') {
-			groupAddScore += 0.2;
-		} else if (finalSkill.difficulty === 'C') {
-			groupAddScore += 0.3;
-		} else {
-			groupAddScore += 0.5;
+		if (0 < skills.filter(s => s.group === '4').length) {
+			const finalSkill = skills.filter(s => s.group === '4')[0];
+			if (finalSkill.difficulty === 'A') {
+				groupAddScore += 0.1;
+			} else if (finalSkill.difficulty === 'B') {
+				groupAddScore += 0.2;
+			} else if (finalSkill.difficulty === 'C') {
+				groupAddScore += 0.3;
+			} else {
+				groupAddScore += 0.5;
+			}
 		}
 
-		// TODO 組合せ加点の算出 (ゆか/鉄棒のみ)
+		// ========================================
+		// 組合せ加点の算出 (ゆか/鉄棒のみ)
+		// 丸め誤差が出るため、整数で計算して最後に10で割る。
+		// ========================================
+		if (shumoku === 'ゆか') {
+			// TODO
+		} else if (shumoku === '鉄棒') {
+			for (let i = 0; i < skills.length - 1; i++) {
+				combinationAddScore += 10 * computeCombinationAddScore(shumoku, skills[i], skills[i + 1]);
+			}
+		}
+		combinationAddScore /= 10;
+	}
+
+	// =========================================
+	// 技ユーティリティ
+	// =========================================
+	function computeCombinationAddScore(shumoku, skill1, skill2) {
+		if (skill2.combineWithPrev === false) {
+			return 0.0;
+		}
+
+		if (shumoku === 'ゆか') {
+			// TODO
+			return 0.0;
+		}
+
+		if (shumoku === '鉄棒') {
+			// 「C以上の手放し技 + C以上の手放し技」の組合せ
+			if (skill1.group === '2' && skill2.group === '2' && 'C' <= skill1.difficulty && 'C' <= skill2.difficulty) {
+				if (skill1.difficulty === 'C' || skill2.difficulty === 'C') {
+					return 0.1;
+				} else {
+					return 0.2;
+				}
+			}
+			// 「D以上のアドラー系 + D以上の手放し技」の組合せ
+			if ('D' <= skill1.difficulty && isAdler(skill1.name) && skill2.group === '2' && 'D' <= skill2.difficulty) {
+				if (skill2.difficulty === 'D') {
+					return 0.1;
+				} else {
+					return 0.2;
+				}
+			}
+		}
 
 		return 0.0;
+	}
+
+	function isNotTwist(skillName) {
+		const words = ['ひねり', 'ハーフ'];
+		return words.some(w => skillName.includes(w)) === false;
+	}
+
+	function isSingle(skillName) {
+		return isDoubleOrMore(skillName) === false;
+	}
+
+	function isDoubleOrMore(skillName) {
+		const words = ['ダブル', '二回宙', '2回宙', '２回宙', '三回宙', '3回宙', '３回宙',];
+		return words.some(w => skillName.includes(w));
+	}
+
+	function isAdler(skillName) {
+		const words = ['アドラー'];
+		return words.some(w => skillName.includes(w));
 	}
 </script>
 
