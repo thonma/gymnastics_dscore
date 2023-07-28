@@ -76,11 +76,7 @@
 		groupAddScore += selectedGroups.includes('3') ? 0.5 : 0;
 		if (0 < skills.filter(s => s.group === '4').length) {
 			const finalSkill = skills.filter(s => s.group === '4')[0];
-			if (finalSkill.difficulty === 'A') {
-				groupAddScore += 0.1;
-			} else if (finalSkill.difficulty === 'B') {
-				groupAddScore += 0.2;
-			} else if (finalSkill.difficulty === 'C') {
+			if (finalSkill.difficulty === 'C') {
 				groupAddScore += 0.3;
 			} else {
 				groupAddScore += 0.5;
@@ -176,25 +172,22 @@
 			<thead>
 				<tr>
 					<th>No</th>
-					{#if shumoku === 'ゆか' || shumoku === '鉄棒'}
-					<th>組合せ</th>
-					{/if}
-					<th>技名</th>
-					<th colspan="2">グループ/難度</th>
+					<th colspan="3">技名/グループ/難度/組合せ</th>
 					<th>備考</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each skills as s, sIdx}
-			  <tr>
-				  <td>{sIdx + 1}</td>
-					{#if shumoku === 'ゆか' || shumoku === '鉄棒'}
-					<td>
-						{#if 0 < sIdx}
-					  <input type="checkbox" bind:checked={skills[sIdx].combineWithPrev} on:change={computeDScore} title="前の技と組み合わせて実施する場合はチェックを入れてください。">
-						{/if}
+				{#if 0 < sIdx && (shumoku === 'ゆか' || shumoku === '鉄棒')}
+				<tr class="fit-height">
+					<td><!-- No列には何も表示しない --></td>
+					<td colspan="3">
+						<input type="checkbox" bind:checked={skills[sIdx].combineWithPrev} on:change={computeDScore}>
 					</td>
-					{/if}
+				</tr>
+				{/if}
+			  <tr>
+				  <td class="align-center">{sIdx + 1}</td>
 					<td>
 					  <input type="text" bind:value={skills[sIdx].name}>
 					</td>
@@ -252,11 +245,40 @@
 		width: 100%;
 	}
 
-	table input {
+	table tr.fit-height {
+		line-height: 0;
+	}
+
+	table th {
+		background-color: #333;
+		color: #fff;
+	}
+
+	table td {
+		vertical-align: bottom;
+	}
+
+	table input[type="text"] {
 		width: 100%;
+	}
+
+	table input[type="checkbox"] {
+		margin: 0;
 	}
 
 	table select {
 		width: 100%;
+	}
+
+	.align-left {
+		text-align: left;
+	}
+
+	.align-center {
+		text-align: center;
+	}
+
+	.align-right {
+		text-align: right;
 	}
 </style>
