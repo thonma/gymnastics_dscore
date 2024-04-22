@@ -5,38 +5,53 @@
 	const numFmt = new Intl.NumberFormat('ja-JP', { minimumFractionDigits: 1 });
 	const difficulties = [...'ABCDEFGHIJ'];
 	const groups = [...'1234'];
-	// 種目は英語でeventだが分かりにくくなるのでローマ字にする
-	const shumokuList = ['ゆか', 'あん馬', 'つり輪', '平行棒', '鉄棒'];
+	// 種目は英語で event だが分かりにくくなるのでローマ字にする
+	const shumokuList = ['ゆか', 'あん馬', 'つり輪', '跳馬', '平行棒', '鉄棒'];
 
 	// =========================================
-	// メタデータ(所属、氏名など)
+	// 選手情報
 	// =========================================
-	let metadata = 'ジムナス大学\n体操 太郎';
+	let player = {
+		num: '',
+		team: '',
+		grade: '',
+		fullname: '',
+		note: '',
+	};
 
 	// =========================================
 	// 演技構成
 	// =========================================
-	let skills = new Array(10).fill().map(() => ({
-		combineWithPrev: false,
-		name: '',
-		difficulty: '',
-		group: '',
-		note: '',
-	}));
-
-	// =========================================
-	// 種目と各スコア
-	// =========================================
-	let shumoku = 'ゆか';
-	let difficultyAddScore = 0.0;
-	let groupAddScore = 0.0;
-	let combinationAddScore = 0.0;
-	let adjustmentScore = 0.0;
+	let engiKoseiList = shumokuList.map(s => {
+		return {
+			shumoku: s,
+			engiKosei: new Array(s === '跳馬' ? 1 : 10).fill(0).map(() => {
+				return {
+					kumiawaseWithPrev: false,
+					num: '',
+					name: '',
+					group: '',
+					nando: '',
+					// kumiawaseWithPrev: true,
+					// num: '1',
+					// name: '片腕支持3/4ひねり単棒倒立経過、軸手を換えて片腕支持3/4ひねり支持',
+					// group: '2',
+					// nando: 'C',
+				};
+			}),
+			score: {
+				nando: 0.0,
+				group: 0.0,
+				kumiawase: 0.0,
+				d: 0.0, // nando + group + kumiawase
+			},
+		};
+	});
 
 	// =========================================
 	// 演技構成のバリデーションエラーを探す
 	// =========================================
-	function findSkillsValidationErrors() {
+	function findEngiKoseiValidationErrors() {
 		const errs = [];
 		// TODO 実装
 		return errs;
@@ -147,7 +162,7 @@
 	}
 
 	function isAdler(skillName) {
-		const words = ['アドラー'];
+		const words = ['アドラー',];
 		return words.some(w => skillName.includes(w));
 	}
 </script>
@@ -157,128 +172,117 @@
 </svelte:head>
 
 <section>
-  <label for="metadata">所属、氏名など</label>
-	<textarea bind:value={metadata} id="metadata"></textarea>
+	<details class="bg-slate-100 p-2">
+		<summary>選手情報</summary>
 
-	<label for="shumoku">種目</label>
-	<select bind:value={shumoku} on:change={computeDScore} id="shumoku">
-		{#each shumokuList as s}
-		<option value={s}>{s}</option>
-		{/each}
-	</select>
+		<div class="text-sm text-red-500 mb-2">
+			<!-- TODO -->
+			エラーメッセージ01<br>
+			エラーメッセージ02<br>
+			エラーメッセージ03<br>
+		</div>
 
-	<div>
-	  <table>
-			<thead>
-				<tr>
-					<th>No</th>
-					<th colspan="3">技名/グループ/難度/組合せ</th>
-					<th>備考</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each skills as s, sIdx}
-				{#if 0 < sIdx && (shumoku === 'ゆか' || shumoku === '鉄棒')}
-				<tr class="fit-height">
-					<td><!-- No列には何も表示しない --></td>
-					<td colspan="3">
-						<input type="checkbox" bind:checked={skills[sIdx].combineWithPrev} on:change={computeDScore}>
-					</td>
-				</tr>
-				{/if}
-			  <tr>
-				  <td class="align-center">{sIdx + 1}</td>
-					<td>
-					  <input type="text" bind:value={skills[sIdx].name}>
-					</td>
-					<td>
-					  <select bind:value={skills[sIdx].group} on:change={computeDScore}>
-							<option value=""></option>
-							{#each groups as g}
-							<option value={g}>{g}</option>
-							{/each}
-						</select>
-					</td>
-					<td>
-					  <select bind:value={skills[sIdx].difficulty} on:change={computeDScore}>
-							<option value=""></option>
-							{#each difficulties as d}
-							<option value={d}>{d}</option>
-							{/each}
-						</select>
-					</td>
-					<td>
-					  <input type="text" bind:value={skills[sIdx].note}>
-					</td>
-				</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
+		<div class="flex justify-between">
+			<div class="w-[10%]">
+				<label for="playerNum" class="block text-sm">選手番号</label>
+				<input type="text" name="playerNum" bind:value={player.num} class="w-full px-1 border" />
+			</div>
 
-	<hr>
+			<div class="w-[30%]">
+				<label for="playerTeam" class="block text-sm">所属</label>
+				<input type="text" name="playerTeam" bind:value={player.team} class="w-full px-1 border" />
+			</div>
+
+			<div class="w-[10%]">
+				<label for="playerGrade" class="block text-sm">学年</label>
+				<input type="text" name="playerGrade" bind:value={player.grade} class="w-full px-1 border" />
+			</div>
+
+			<div class="w-[49%]">
+				<label for="playerFullname" class="block text-sm">氏名</label>
+				<input type="text" name="playerFullname" bind:value={player.fullname} class="w-full px-1 border" />
+			</div>
+		</div>
+
+		<label for="playerNote" class="block text-sm">備考</label>
+		<textarea name="playerNote" rows="2" bind:value={player.note} class="w-full px-1 border" />
+	</details>
+	<hr class="my-2">
 
 	<div>
-	  <div>難度加点 <strong>{numFmt.format(difficultyAddScore)}</strong></div>
-		<div>特別要求加点 <strong>{numFmt.format(groupAddScore)}</strong></div>
-		{#if shumoku === 'ゆか' || shumoku === '鉄棒'}
-		<div>組合せ加点 <strong>{numFmt.format(combinationAddScore)}</strong></div>
-		{/if}
-		<div>調整点 <input type="number" step="0.1" bind:value={adjustmentScore}></div>
-		<div>Dスコア: <strong>{numFmt.format(difficultyAddScore + groupAddScore + combinationAddScore + adjustmentScore)}</strong></div>
+		<div class="text-sm text-red-500 mb-2">
+			<!-- TODO -->
+			エラーメッセージ01<br>
+			エラーメッセージ02<br>
+			エラーメッセージ03<br>
+		</div>
+
+		<div class="flex justify-between items-start">
+			{#each engiKoseiList as ek, ekIndex}
+			<table class="mx-2 w-full" class:ml-0={ekIndex === 0} class:mr-0={ekIndex === engiKoseiList.length - 1}>
+				<thead>
+					<tr>
+						<th class="text-left " colspan="2">{ ek.shumoku }</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each engiKoseiList[ekIndex].engiKosei as engiKosei, engiKoseiIndex}
+					<tr>
+						<td class="border rounded p-2" colspan="2">
+							{#if engiKosei.num !== ''}
+								{ `${engiKosei.name} (${engiKosei.group}${engiKosei.nando})` }
+							{:else}
+								<button class="bg-slate-100 border rounded px-2 py-1 w-full">技を選択する</button>
+							{/if}
+						</td>
+					</tr>
+					{#if ek.shumoku !== '跳馬' && engiKoseiIndex < 9}
+					<tr>
+						<!-- "↓"をアイコンにする -->
+						<td class="font-bold text-lg text-center text-slate-300" colspan="2">↓</td>
+					</tr>
+					{/if}
+					{/each}
+					{#if ek.shumoku !== '跳馬'}
+					<tr>
+						<td class="pt-2 pl-2 font-bold text-lg">難度点</td>
+						<td class="pt-2 pr-2 font-bold text-lg text-right">{ ek.score.nando.toFixed(1) }</td>
+					</tr>
+					<tr>
+						<td class="pl-2 font-bold text-lg">グループ要求加点</td>
+						<td class="pr-2 font-bold text-lg text-right">{ ek.score.nando.toFixed(1) }</td>
+					</tr>
+					<tr class="text-transparent" class:text-current={ ek.shumoku === 'ゆか' || ek.shumoku === '鉄棒' }>
+						<td class="pl-2 font-bold text-lg">組合せ加点</td>
+						<td class="pr-2 font-bold text-lg text-right">{ ek.score.kumiawase.toFixed(1) }</td>
+					</tr>
+					{/if}
+					<tr>
+						<td class="pt-2 pl-2 font-bold text-lg">Dスコア</td>
+						<td class="pt-2 pr-2 font-bold text-lg text-right">{ ek.score.d.toFixed(1) }</td>
+					</tr>
+					{#if ek.shumoku !== '跳馬'}
+					<tr>
+						<td class="py-2 pl-2 font-bold text-lg">技数減点</td>
+						<td class="py-2 pr-2 font-bold text-lg text-right">0.0</td>
+					</tr>
+					{/if}
+				</tbody>
+			</table>
+			{/each}
+		</div>
 	</div>
 
-	<hr>
+	<hr class="my-2">
+	<details class="bg-slate-100 p-2">
+			<summary>Dump</summary>
 
-	<div>TODO: 免責事項(何があっても責任取りません的なやつ)/許諾事項(WTFPL的なやつ)/諸注意(対応していないルールなど)を書く</div>
-	<div>TODO: GitHubへのアイコンリンクを実装</div>
+			<pre><code>player = { JSON.stringify(player, null, 2) }
+
+engiKoseiList = { JSON.stringify(engiKoseiList, null, 2) }
+</code></pre>
+	</details>
 </section>
 
 <style>
-  [id="metadata"] {
-		width: 100%;
-		height: 3rem;
-		resize: vertical;
-	}
-
-	table {
-		width: 100%;
-	}
-
-	table tr.fit-height {
-		line-height: 0;
-	}
-
-	table th {
-		background-color: #333;
-		color: #fff;
-	}
-
-	table td {
-		vertical-align: bottom;
-	}
-
-	table input[type="text"] {
-		width: 100%;
-	}
-
-	table input[type="checkbox"] {
-		margin: 0;
-	}
-
-	table select {
-		width: 100%;
-	}
-
-	.align-left {
-		text-align: left;
-	}
-
-	.align-center {
-		text-align: center;
-	}
-
-	.align-right {
-		text-align: right;
-	}
 </style>

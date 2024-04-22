@@ -4,7 +4,7 @@
 
 ### オンライン
 
-https://stackblitz.com/edit/sveltejs-kit-template-default-w3cdmo?file=README.md
+https://stackblitz.com/~/github.com/thonma/gymnastics_dscore
 
 ### オフライン (未検証)
 
