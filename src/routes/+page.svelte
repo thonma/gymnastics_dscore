@@ -92,7 +92,8 @@
 			const n = this.culculateNandoTen();
 			const g = this.culculateGroupYokyuKaten();
 			const k = this.culculateKumiawaseKaten();
-			return n + g + k;
+			// 丸め誤差防止のため、10倍にした値を足して10で割る
+			return ((n * 10) + (g * 10) + (k * 10)) / 10;
 		}
 
 		calculateGisuGenten(): number {
@@ -150,6 +151,8 @@
 		fullname: string;
 		note: string;
 
+		validationErrMsgList: string[];
+
 		constructor(
 			num: string,
 			team: string,
@@ -162,11 +165,26 @@
 			this.grade = grade;
 			this.fullname = fullname;
 			this.note = note;
+			this.validationErrMsgList = [];
 		}
 
 		validate(): boolean | string[] {
 			// TODO 実装
-			return true;
+			this.validationErrMsgList = [];
+			
+			if (this.num === null || this.num === undefined || this.num.length === 0 || 10 < this.num.length) {
+				this.validationErrMsgList.push(`選手番号を1～10文字で入力してください。`);
+			}
+
+			if (this.team === null || this.team === undefined || this.team.length === 0 || 20 < this.team.length) {
+				this.validationErrMsgList.push(`所属を1～20文字で入力してください。`);
+			}
+
+			if (this.fullname === null || this.fullname === undefined || this.fullname.length === 0 || 20 < this.fullname.length) {
+				this.validationErrMsgList.push(`氏名を1～20文字で入力してください。`);
+			}
+
+			return 0 < this.validationErrMsgList.length ? this.validationErrMsgList : true;
 		}
 	}
 
@@ -180,13 +198,18 @@
 	// =========================================
 	// 選手情報
 	// =========================================
-	let player = {
-		num: '',
-		team: '',
-		grade: '',
-		fullname: '',
-		note: ''
-	};
+	// let player = {
+	// 	num: '',
+	// 	team: '',
+	// 	grade: '',
+	// 	fullname: '',
+	// 	note: ''
+	// };
+	let player = new Player('', '', '', '', '');
+	function invokePlayerValidate() {
+		player.validate();
+		player = player;
+	}
 
 	// =========================================
 	// 演技構成
@@ -414,53 +437,62 @@
 </svelte:head>
 
 <section>
-	<details class="bg-slate-100 p-2">
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 選手情報 -------------------------------------------------------------------------- -->
+	<!-- -------------------------------------------------------------------------- -->
+	<details open class="bg-slate-100 p-2">
 		<summary>選手情報</summary>
 
-		<div class="text-sm text-red-500 mb-2">
+		<div class="text-sm text-red-500 my-2">
 			<!-- TODO -->
-			エラーメッセージ01<br />
-			エラーメッセージ02<br />
-			エラーメッセージ03<br />
+			{#each player.validationErrMsgList as msg}
+				{ msg }
+				<br>
+			{/each}
 		</div>
 
-		<div class="flex justify-between">
+		<div class="flex justify-between mb-2">
 			<div class="w-[10%]">
-				<label for="playerNum" class="block text-sm">選手番号</label>
-				<input type="text" name="playerNum" bind:value={player.num} class="w-full px-1 border" />
+				<label for="playerNum" class="block text-sm">選手番号&nbsp;<span class="rounded-full bg-red-500 text-neutral-50 text-xs px-2">必須</span></label>
+				<input type="text" name="playerNum" bind:value={player.num} on:input={invokePlayerValidate} class="w-full px-1 border" />
 			</div>
 
 			<div class="w-[30%]">
-				<label for="playerTeam" class="block text-sm">所属</label>
-				<input type="text" name="playerTeam" bind:value={player.team} class="w-full px-1 border" />
+				<label for="playerTeam" class="block text-sm">所属&nbsp;<span class="rounded-full bg-red-500 text-neutral-50 text-xs px-2">必須</span></label>
+				<input type="text" name="playerTeam" bind:value={player.team} on:input={invokePlayerValidate} class="w-full px-1 border" />
 			</div>
 
 			<div class="w-[10%]">
-				<label for="playerGrade" class="block text-sm">学年</label>
+				<label for="playerGrade" class="block text-sm">学年&nbsp;<span class="rounded-full bg-gray-500 text-neutral-50 text-xs px-2">任意</span></label>
 				<input
 					type="text"
 					name="playerGrade"
 					bind:value={player.grade}
+					on:input={invokePlayerValidate}
 					class="w-full px-1 border"
 				/>
 			</div>
 
 			<div class="w-[49%]">
-				<label for="playerFullname" class="block text-sm">氏名</label>
+				<label for="playerFullname" class="block text-sm">氏名&nbsp;<span class="rounded-full bg-red-500 text-neutral-50 text-xs px-2">必須</span></label>
 				<input
 					type="text"
 					name="playerFullname"
 					bind:value={player.fullname}
+					on:input={invokePlayerValidate}
 					class="w-full px-1 border"
 				/>
 			</div>
 		</div>
 
-		<label for="playerNote" class="block text-sm">備考</label>
-		<textarea name="playerNote" rows="2" bind:value={player.note} class="w-full px-1 border" />
+		<label for="playerNote" class="block text-sm">備考&nbsp;<span class="rounded-full bg-gray-500 text-neutral-50 text-xs px-2">任意</span></label>
+		<textarea name="playerNote" rows="2" bind:value={player.note} on:input={invokePlayerValidate} class="w-full px-1 border" />
 	</details>
 	<hr class="my-2" />
 
+	<!-- -------------------------------------------------------------------------- -->
+	<!-- 演技構成 -------------------------------------------------------------------------- -->
+	<!-- -------------------------------------------------------------------------- -->
 	<div>
 		<div class="text-sm text-red-500 mb-2">
 			<!-- TODO -->
@@ -488,37 +520,31 @@
 									{#if engiKosei.num !== ''}
 										{`${engiKosei.name} (${engiKosei.group}${engiKosei.nando})`}
 									{:else}
-										<input
-											type="text"
-											name={`${ek.shumoku}_${engiKoseiIndex}`}
-											list="WazaList"
-											class="w-full px-2 py-1 border"
-										/>
+										<button class="border rounded bg-slate-100 px-2 py-1 w-full">技を選択する</button>
 									{/if}
 								</td>
 							</tr>
-							{#if ek.shumoku !== '跳馬' && engiKoseiIndex < 9}
+							{#if engiKoseiIndex < 9}
 								<tr>
 									<!-- "↓"をアイコンにする -->
-									<td class="font-bold text-lg text-center text-slate-300" colspan="2">↓</td>
+									<td class="font-bold text-lg text-center { ['ゆか', '鉄棒'].includes(ek.shumoku) ? 'text-slate-300 cursor-pointer' : 'text-transparent' }" colspan="2">↓</td>
 								</tr>
 							{/if}
 						{/each}
 						{#if ek.shumoku !== '跳馬'}
 							<tr>
-								<td class="pt-2 pl-2 font-bold text-lg">難度点</td>
-								<td class="pt-2 pr-2 font-bold text-lg text-right">{ek.score.nando.toFixed(1)}</td>
+								<td class="pt-2 pl-2 font-bold">難度点</td>
+								<td class="pt-2 pr-2 font-bold text-right">{ek.score.nando.toFixed(1)}</td>
 							</tr>
 							<tr>
-								<td class="pl-2 font-bold text-lg">グループ要求加点</td>
-								<td class="pr-2 font-bold text-lg text-right">{ek.score.nando.toFixed(1)}</td>
+								<td class="pl-2 font-bold">グループ要求加点</td>
+								<td class="pr-2 font-bold text-right">{ek.score.nando.toFixed(1)}</td>
 							</tr>
 							<tr
-								class="text-transparent"
-								class:text-current={ek.shumoku === 'ゆか' || ek.shumoku === '鉄棒'}
+								class="{ ['ゆか', '鉄棒'].includes(ek.shumoku) ? 'text-current' : 'text-transparent'}"
 							>
-								<td class="pl-2 font-bold text-lg">組合せ加点</td>
-								<td class="pr-2 font-bold text-lg text-right">{ek.score.kumiawase.toFixed(1)}</td>
+								<td class="pl-2 font-bold">組合せ加点</td>
+								<td class="pr-2 font-bold text-right">{ek.score.kumiawase.toFixed(1)}</td>
 							</tr>
 						{/if}
 						<tr>
@@ -527,8 +553,8 @@
 						</tr>
 						{#if ek.shumoku !== '跳馬'}
 							<tr>
-								<td class="py-2 pl-2 font-bold text-lg">技数減点</td>
-								<td class="py-2 pr-2 font-bold text-lg text-right">0.0</td>
+								<td class="py-2 pl-2 font-bold">技数減点</td>
+								<td class="py-2 pr-2 font-bold text-right">0.0</td>
 							</tr>
 						{/if}
 					</tbody>
